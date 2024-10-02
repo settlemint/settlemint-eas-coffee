@@ -1,4 +1,4 @@
-import { geoEquirectangular } from 'd3-geo';
+import { type GeoProjection, geoEquirectangular } from 'd3-geo';
 import type React from 'react';
 import type { GeographyProps } from "react-simple-maps";
 import { ComposableMap, Geographies, Geography, Line, Marker, ZoomableGroup } from "react-simple-maps";
@@ -13,7 +13,7 @@ const MapComponent: React.FC<MapProps> = ({ coordinates }) => {
   const width = 800;
   const height = 400;
 
-  const projection = geoEquirectangular()
+  const projection: GeoProjection = geoEquirectangular()
     .scale((width / 2.5) / Math.PI)
     .translate([width / 2, height / 2]);
 
@@ -45,7 +45,7 @@ const MapComponent: React.FC<MapProps> = ({ coordinates }) => {
   return (
     <div className="relative w-full h-[400px]">
       <ComposableMap
-        projection={projection}
+        projection={projection as any}
         width={width}
         height={height}
         style={{ width: "100%", height: "100%" }}
@@ -55,7 +55,7 @@ const MapComponent: React.FC<MapProps> = ({ coordinates }) => {
             {({ geographies }: { geographies: GeographyProps[] }) =>
               geographies.map((geo) => (
                 <Geography
-                  key={geo.rsmKey}
+                  key={geo.rsmKey as string}
                   geography={geo}
                   fill="#EAEAEC"
                   stroke="#D6D6DA"
