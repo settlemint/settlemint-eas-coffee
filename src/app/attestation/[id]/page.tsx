@@ -9,6 +9,7 @@ import { useEffect, useState } from 'react';
 import { Chrono } from "react-chrono";
 import { FaCalendarAlt, FaCertificate, FaClock, FaHashtag, FaInfoCircle, FaMapMarkerAlt, FaUser } from 'react-icons/fa';
 import { fetchAttestationById, fetchAttestationsByBatchId } from '../../../api/attestations';
+import { Footer } from '../../../components/Footer';
 import { NavBar } from '../../../components/NavBar';
 import type { Attestation } from '../../../types/attestation';
 
@@ -198,16 +199,19 @@ export default function AttestationDetailPage(): JSX.Element {
             const currentStage = fetchedAttestation.decodedData.stage;
             const relevantStages = fetchedStages.filter(stage => stage.decodedData.stage <= currentStage);
 
-            const batchCoordinates = relevantStages.map(async (attestation) => {
-              const results = await geocode({ q: attestation.decodedData.location });
-              if (results.length > 0) {
-                return [Number(results[0].lat), Number(results[0].lon)];
+            const batchCoordinates = await Promise.all(relevantStages.map(async (attestation) => {
+              try {
+                const results = await geocode({ q: attestation.decodedData.location });
+                if (results.length > 0) {
+                  return [Number(results[0].lon), Number(results[0].lat)] as [number, number];
+                }
+              } catch (error) {
+                console.error('Error geocoding location:', attestation.decodedData.location, error);
               }
               return null;
-            });
+            }));
 
-            const resolvedCoordinates = await Promise.all(batchCoordinates);
-            const filteredCoordinates = resolvedCoordinates.filter((coord): coord is [number, number] => coord !== null);
+            const filteredCoordinates = batchCoordinates.filter((coord): coord is [number, number] => coord !== null);
             setCoordinates(filteredCoordinates);
           }
         } catch (error) {
@@ -261,11 +265,11 @@ export default function AttestationDetailPage(): JSX.Element {
           {/* Map component */}
           <div className="relative">
             {coordinates.length > 0 ? (
-              <div className="h-[300px] w-full">
+              <div className="h-[400px] w-full"> {/* Increased height for better visibility */}
                 <MapComponent coordinates={coordinates} />
               </div>
             ) : (
-              <div className="h-[300px] w-full flex items-center justify-center bg-[#4A4A4A]">
+              <div className="h-[400px] w-full flex items-center justify-center bg-[#4A4A4A]">
                 <p className="text-[#D4A574]">Map data unavailable</p>
               </div>
             )}
@@ -297,12 +301,7 @@ export default function AttestationDetailPage(): JSX.Element {
           </div>
         </motion.div>
       </main>
-      <footer className="bg-[#1A1A1A] text-[#F5F5F5] py-12 mt-auto">
-        <div className="container mx-auto text-center">
-          <p className="text-2xl">&copy; 2024 Coffee Batch Tracker. All rights reserved.</p>
-          <p className="mt-4 text-lg opacity-75">Ensuring transparency and sustainability in every cup.</p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }
