@@ -17,12 +17,6 @@ const MapComponent: React.FC<MapProps> = ({ coordinates }) => {
     .scale((width / 2.5) / Math.PI)
     .translate([width / 2, height / 2]);
 
-  // Calculate the center of the coordinates
-  const center = coordinates.reduce(
-    (acc, coord) => [acc[0] + coord[0] / coordinates.length, acc[1] + coord[1] / coordinates.length],
-    [0, 0]
-  ) as [number, number];
-
   // Calculate the bounding box of the coordinates
   const bounds = coordinates.reduce(
     (acc, coord) => ({
@@ -34,13 +28,18 @@ const MapComponent: React.FC<MapProps> = ({ coordinates }) => {
     { minLon: Number.POSITIVE_INFINITY, maxLon: Number.NEGATIVE_INFINITY, minLat: Number.POSITIVE_INFINITY, maxLat: Number.NEGATIVE_INFINITY }
   );
 
-  // Calculate the appropriate zoom level
-  const lonDiff = bounds.maxLon - bounds.minLon;
-  const latDiff = bounds.maxLat - bounds.minLat;
-  const maxZoom = 50;
-  const minZoom = 1;
-  const zoomFactor = 360 / Math.max(lonDiff * 2, latDiff * 4, 1); // Prevent division by zero
-  const zoom = Math.max(Math.min(zoomFactor, maxZoom), minZoom);
+  // Calculate the appropriate zoom level with padding
+  const padding = 0.2; // 20% padding
+  const lonDiff = (bounds.maxLon - bounds.minLon) * (1 + padding);
+  const latDiff = (bounds.maxLat - bounds.minLat) * (1 + padding * 2); // Double padding for latitude
+  const maxDiff = Math.max(lonDiff, latDiff);
+  const zoom = Math.max(1, Math.min(6, 360 / maxDiff));
+
+  // Calculate the center, shifting it southward
+  const center: [number, number] = [
+    (bounds.minLon + bounds.maxLon) / 2,
+    ((bounds.minLat + bounds.maxLat) / 2) - (latDiff / 4) // Shift south by 1/4 of the latitude difference
+  ];
 
   return (
     <div className="relative w-full h-[400px]">
@@ -50,7 +49,7 @@ const MapComponent: React.FC<MapProps> = ({ coordinates }) => {
         height={height}
         style={{ width: "100%", height: "100%" }}
       >
-        <ZoomableGroup center={center} zoom={zoom} minZoom={minZoom} maxZoom={maxZoom}>
+        <ZoomableGroup center={center} zoom={zoom} disablePanning>
           <Geographies geography={geoUrl}>
             {({ geographies }: { geographies: GeographyProps[] }) =>
               geographies.map((geo) => (
@@ -66,14 +65,14 @@ const MapComponent: React.FC<MapProps> = ({ coordinates }) => {
 
           {coordinates.map((coord, index) => (
             <Marker key={`marker-${coord.join(',')}`} coordinates={coord}>
-              <circle r={4} fill="#F00" />
+              <circle r={2} fill="#D4A574" />
             </Marker>
           ))}
 
           <Line
             coordinates={coordinates}
-            stroke="#F00"
-            strokeWidth={2}
+            stroke="#D4A574"
+            strokeWidth={1.5}
             strokeLinecap="round"
           />
         </ZoomableGroup>
