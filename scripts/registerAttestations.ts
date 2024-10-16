@@ -11,6 +11,9 @@ const BLOCKCHAIN_NODE = `${process.env.NEXT_PUBLIC_BLOCKCHAIN_NODE}/${process.en
 const PRIVATE_KEY = process.env.PRIVATE_KEY;
 const SCHEMA_UID = process.env.NEXT_PUBLIC_SCHEMA_UID; // Make sure this is set to your actual schema UID
 
+// Add this near the top of the file, after the imports and before the function definitions
+const stages = ["Farm", "Processing", "Export", "Import", "Roasting", "Retail"];
+
 interface AttestationDetails {
   uid: string;
   schema: string;
@@ -67,8 +70,6 @@ const cities = {
   Spain: ["Madrid", "Barcelona", "Valencia", "Seville", "Bilbao"],
   Sweden: ["Stockholm", "Gothenburg", "Malmö", "Uppsala", "Västerås"],
 };
-
-const stages = ["Farm", "Processing", "Export", "Import", "Roasting", "Retail"];
 
 const certifications = {
   Organic: { duration: 365 * 2 }, // 2 years
@@ -446,5 +447,3 @@ if (require.main === module) {
   console.log(chalk.green.bold("🚀 Script started"));
   main();
 }
-
-

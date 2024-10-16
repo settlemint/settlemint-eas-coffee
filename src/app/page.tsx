@@ -5,12 +5,13 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useAccount } from "wagmi";
 import { fetchAttestations, fetchTotalAttestations } from "../api/attestations";
+import { AIPromptBar } from "../components/AIPromptBar";
 import { AttestationModal } from "../components/AttestationModal";
 import { AttestationsTable } from "../components/AttestationsTable";
-import { CreateAttestationButton } from "../components/CreateAttestationButton";
 import { Footer } from "../components/Footer";
 import { NavBar } from "../components/NavBar";
 import type { Attestation } from "../types/attestation";
+
 
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
@@ -24,6 +25,8 @@ export default function Home() {
   const [columns, setColumns] = useState<string[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [totalAttestations, setTotalAttestations] = useState<number | null>(null);
+  const [aiAttestations, setAIAttestations] = useState<Attestation[]>([]);
+  console.log(aiAttestations)
 
   const loadAttestations = useCallback(async () => {
     const fetchedAttestations = await fetchAttestations();
@@ -33,7 +36,9 @@ export default function Home() {
     setAttestations(sortedAttestations);
 
     if (sortedAttestations.length > 0) {
-      setColumns(Object.keys(sortedAttestations[0].decodedData));
+      const newColumns = Object.keys(sortedAttestations[0].decodedData);
+      setColumns(newColumns);
+      console.log("Columns set:", newColumns);
     }
 
     const total = await fetchTotalAttestations();
@@ -64,6 +69,10 @@ export default function Home() {
     useTransform(scrollY, [0, 300], [50, -50]),
     springConfig
   );
+
+  const handleAIAttestationsReceived = (newAttestations: any) => {
+    setAIAttestations(newAttestations.attestations);
+  };
 
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-b from-[#1A1A1A] to-[#2A2A2A] font-sans text-[#F5F5F5]">
@@ -171,6 +180,35 @@ export default function Home() {
 
           <motion.div
             {...fadeIn}
+            className="mb-8"
+          >
+            <h2 className="text-3xl font-bold text-[#D4A574] font-poppins mb-4">
+              AI-Powered Coffee Bean Recommendations
+            </h2>
+            <p className="text-lg text-[#F5F5F5] mb-4">
+              Our AI analyzes your preferences to find the perfect coffee beans. Describe the flavors, aromas, or origins you enjoy, and let our intelligent system recommend matching batches from our database.
+            </p>
+            <AIPromptBar onAttestationsReceived={handleAIAttestationsReceived} />
+            {aiAttestations.length > 0 ? (
+              <div className="bg-[#2A2A2A] p-6 rounded-lg shadow-xl mt-4">
+                <h3 className="text-2xl font-semibold text-[#D4A574] mb-4 font-poppins">AI-Recommended Coffee Beans</h3>
+                <p className="text-[#F5F5F5] mb-4">Based on your description, our AI has found {aiAttestations.length} coffee bean batches that align with your preferences:</p>
+                <AttestationsTable
+                  attestations={aiAttestations}
+                  columns={columns}
+                  enableSorting={false}
+                  enableFiltering={false}
+                  enablePagination={false}
+                  rowsPerPage={5}
+                  defaultSortColumn="timestamp"
+                  defaultSortDirection="desc"
+                />
+              </div>
+            ):''}
+          </motion.div>
+
+          {/* <motion.div
+            {...fadeIn}
             className="mb-16"
           >
             <div className="flex justify-between items-center mb-6">
@@ -191,7 +229,7 @@ export default function Home() {
                 defaultSortDirection="desc"
               />
             </div>
-          </motion.div>
+          </motion.div> */}
         </motion.div>
       </main>
 

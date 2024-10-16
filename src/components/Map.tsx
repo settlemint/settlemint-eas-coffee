@@ -54,7 +54,7 @@ const MapComponent: React.FC<MapProps> = ({ coordinates }) => {
             {({ geographies }: { geographies: GeographyProps[] }) =>
               geographies.map((geo) => (
                 <Geography
-                  key={geo.rsmKey as string}
+                  key={geo.key as string}
                   geography={geo}
                   fill="#EAEAEC"
                   stroke="#D6D6DA"
