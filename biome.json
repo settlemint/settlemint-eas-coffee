@@ -1,0 +1,39 @@
+{
+    "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+    "organizeImports": {
+        "enabled": true
+    },
+    "linter": {
+        "enabled": true,
+        "ignore": [
+            "components/ui"
+        ],
+        "rules": {
+            "recommended": true,
+            "a11y": {
+                "useHtmlLang": "off"
+            }
+        }
+    },
+    "formatter": {
+        "enabled": true,
+        "formatWithErrors": false,
+        "attributePosition": "auto",
+        "indentStyle": "space",
+        "indentWidth": 2,
+        "lineEnding": "lf",
+        "lineWidth": 120
+    },
+    "files": {
+        "ignore": [
+            "rest/portal/portal-schema.d.ts",
+            "graphql/thegraph/codegen",
+            "graphql/hasura/codegen"
+        ]
+    },
+    "vcs": {
+        "enabled": true,
+        "clientKind": "git",
+        "useIgnoreFile": true
+    }
+}
